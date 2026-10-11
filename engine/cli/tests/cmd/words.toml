@@ -1,0 +1,27 @@
+bin.name = "sonastik"
+args = [
+    "--dict",
+    "et.dct",
+    "tere",
+    "maailm",
+    "kõrgharidus",
+    "jalgratas",
+    "õigekirjakontroll",
+    "kõrgaridus",
+    "raamtukogu",
+    "jalgatas",
+]
+status.code = 0
+stdout = """
+tere -- OK
+maailm -- OK
+kõrgharidus -- OK
+jalgratas -- OK
+õigekirjakontroll -- OK
+kõrgaridus -- Vigane, soovitan: kõrgharidus kõrgraidus
+raamtukogu -- Vigane, soovitan: raamatukogu
+jalgatas -- Vigane, soovitan: algatas jalgratas jalgaas jalgaras jalgnatas jalghatas jalgahtas jalgatlas
+"""
+
+[fs]
+cwd = "."

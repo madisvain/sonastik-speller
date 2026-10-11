@@ -1,0 +1,3 @@
+[submodule "vabamorf"]
+	path = vabamorf
+	url = https://github.com/Filosoft/vabamorf.git

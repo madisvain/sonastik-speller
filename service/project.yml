@@ -67,6 +67,10 @@ targets:
         excludes:
           - ServiceMain.swift
       - TestHost
+      - path: Menu
+        excludes:
+          - MenuMain.swift
+          - Info.plist
     settings:
       base:
         PRODUCT_NAME: TestHost
@@ -93,6 +97,38 @@ targets:
           cp -f "${SRCROOT}/../LICENSE" "${res}/LICENSE"
           cp -f "${SRCROOT}/../NOTICE.md" "${res}/NOTICE.md"
           codesign --force --sign - "${fw}/libvabamorf.dylib"
+  Sonastik:
+    type: application
+    platform: macOS
+    sources:
+      - path: Menu
+        excludes:
+          - Info.plist
+    info:
+      path: Menu/Info.plist
+      properties:
+        CFBundleDisplayName: Sõnastik
+        CFBundleName: Sõnastik
+        LSUIElement: true
+        LSMinimumSystemVersion: "13.0"
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+    settings:
+      base:
+        PRODUCT_NAME: Sonastik
+        PRODUCT_BUNDLE_IDENTIFIER: ee.madisvain.Sonastik
+        PRODUCT_MODULE_NAME: Sonastik
+        GENERATE_INFOPLIST_FILE: NO
+        WRAPPER_EXTENSION: app
+    postBuildScripts:
+      - name: Embed license notices
+        basedOnDependencyAnalysis: false
+        script: |
+          set -eu
+          res="${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Contents/Resources"
+          mkdir -p "${res}"
+          cp -f "${SRCROOT}/../LICENSE" "${res}/LICENSE"
+          cp -f "${SRCROOT}/../NOTICE.md" "${res}/NOTICE.md"
   SpellerTests:
     type: bundle.unit-test
     platform: macOS
@@ -111,6 +147,7 @@ schemes:
     build:
       targets:
         EstonianSpeller: all
+        Sonastik: all
         TestHost: all
         SpellerTests: [test]
     test:

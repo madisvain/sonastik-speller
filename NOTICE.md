@@ -20,3 +20,9 @@ Vabamorf is built as a separate dynamic library, `libvabamorf.dylib`. The comman
 Spelling uses the binary lexicon `dct/binary/et.dct` from the pinned Vabamorf commit (about 2.4 MB). That file is built from the source lexicon data in the same repository. `et3.dct` is the analyzer and disambiguator lexicon and is not used.
 
 `vm_version()` reports the Vabamorf commit the library was compiled against.
+
+## Third-party Rust crates
+
+The `sonastik` command statically links Rust crates from crates.io. They are permissive licenses: MIT OR Apache-2.0, except `unicode-ident`, which is `(MIT OR Apache-2.0) AND Unicode-3.0`. MIT and Apache-2.0 require that redistributed binaries carry the license notices.
+
+`scripts/third-party.sh` runs during `scripts/build.sh` and writes `dist/THIRD-PARTY.md`: the crate list with each license expression, followed by the license texts shipped with those crates. The file is generated from the dependency graph at build time, so it stays in sync with `engine/cli/Cargo.lock`.

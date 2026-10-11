@@ -26,7 +26,7 @@ cd sonastik-speller
 - `sonastik`, the command-line checker
 - `libvabamorf.dylib`, the engine (Apple Silicon and Intel)
 - `et.dct`, the spelling dictionary
-- `LICENSE` and `NOTICE.md`
+- `LICENSE`, `NOTICE.md`, and `THIRD-PARTY.md` (license notices for the Rust crates linked into `sonastik`)
 - `EstonianSpeller.service`, the background spelling service
 - `install-dev.sh` and `uninstall.sh`
 
@@ -110,7 +110,7 @@ cd sonastik-speller
 - `sonastik`, käsurea kontrollija
 - `libvabamorf.dylib`, mootor (Apple Silicon ja Intel)
 - `et.dct`, õigekirjasõnastik
-- `LICENSE` ja `NOTICE.md`
+- `LICENSE`, `NOTICE.md` ja `THIRD-PARTY.md` (litsentsiteated Rusti kastide kohta, mis on `sonastik`-i sisse lingitud)
 - `EstonianSpeller.service`, taustal töötav õigekirjateenus
 - `install-dev.sh` ja `uninstall.sh`
 

@@ -51,6 +51,7 @@ lipo -create \
 	-output dist/sonastik
 cp -f vabamorf/dct/binary/et.dct dist/
 cp -f LICENSE NOTICE.md dist/
+scripts/third-party.sh dist/THIRD-PARTY.md
 chmod +x dist/sonastik
 
 echo "built ${root}/dist/sonastik ($(dist/sonastik --version))"

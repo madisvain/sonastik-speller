@@ -31,7 +31,6 @@ struct SpellingPayload: Equatable {
 
 enum SpellingLanguage {
     static let estonian = SpellServer(language: "et", vendor: "Sonastik")
-    static let fallbackEnglish = SpellServer(language: "en_GB", vendor: "Apple")
 
     static func isEstonian(_ languageCode: String) -> Bool {
         languageCode == "et" || languageCode.hasPrefix("et_") || languageCode.hasPrefix("et-")
@@ -49,14 +48,38 @@ enum SpellingLanguage {
         return languageCode
     }
 
-    /// The first English pair in the Set Up list, or British English from Apple.
-    static func englishServer(preferredServers: [[String]]) -> SpellServer {
-        for pair in preferredServers where pair.count >= 2 {
-            if isEnglish(pair[0]) {
-                return SpellServer(language: pair[0], vendor: pair[1])
-            }
+    /// The Spelling Set Up list, in the user's order. Incomplete rows are skipped.
+    static func servers(from preferredServers: [[String]]) -> [SpellServer] {
+        preferredServers.compactMap { pair in
+            guard pair.count >= 2, !pair[0].isEmpty else { return nil }
+            return SpellServer(language: pair[0], vendor: pair[1])
         }
-        return fallbackEnglish
+    }
+
+    /// The first four languages stay in the menu. The rest go in a submenu.
+    static let inlineLimit = 4
+
+    static func layout(for servers: [SpellServer]) -> (inline: [SpellServer], overflow: [SpellServer]) {
+        guard servers.count > inlineLimit else { return (servers, []) }
+        return (Array(servers.prefix(inlineLimit)), Array(servers.dropFirst(inlineLimit)))
+    }
+
+    /// Native language name, with the vendor when it is not Apple.
+    /// `et` / Sonastik is "Eesti (Sonastik)". `en_GB` / Apple is "English (United Kingdom)".
+    static func menuTitle(for server: SpellServer) -> String {
+        let locale = Locale(identifier: server.language)
+        let raw = locale.localizedString(forIdentifier: server.language) ?? server.language
+        let name = raw.prefix(1).uppercased(with: locale) + raw.dropFirst()
+        if server.vendor.isEmpty || server.vendor == "Apple" {
+            return String(name)
+        }
+        return "\(name) (\(server.vendor))"
+    }
+
+    static func isCurrent(_ server: SpellServer, language: String, vendors: [String: String]) -> Bool {
+        guard server.language == language else { return false }
+        guard let vendor = vendors[language], !vendor.isEmpty else { return true }
+        return server.vendor == vendor
     }
 
     static func payload(for server: SpellServer) -> SpellingPayload {

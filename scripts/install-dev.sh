@@ -60,8 +60,9 @@ cat <<EOF
 Installed ${dest}/EstonianSpeller.service
 Installed ${app_dest}/Sonastik.app
 
-The menu bar shows ET or EN. Open it to switch Eesti and English, and to see
-whether Sõnastik is running and which version is installed.
+The menu bar shows ET or EN. Open it to choose a language from the Spelling
+Set Up list. The first four are in the menu, and the rest are under More.
+The menu also shows whether Sõnastik is running and which version is installed.
 
 If macOS asks before the icon stays after login, allow it in:
   System Settings → General → Login Items

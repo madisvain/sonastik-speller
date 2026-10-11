@@ -14,21 +14,58 @@ final class MenuTests: XCTestCase {
         XCTAssertEqual(payload.kbSpellingLanguage["KB_SpellingLanguageIsAutomatic"] as? Bool, false)
     }
 
-    func testEnglishPayloadUsesBritishEnglishWhenNoneIsPreferred() {
-        let server = SpellingLanguage.englishServer(preferredServers: [["et", "Sonastik"]])
-        XCTAssertEqual(server, SpellServer(language: "en_GB", vendor: "Apple"))
-        let payload = SpellingLanguage.payload(for: server)
-        XCTAssertEqual(payload.language, "en_GB")
-        XCTAssertEqual(payload.vendor, "Apple")
-        XCTAssertFalse(payload.identifiesLanguagesAutomatically)
-    }
-
-    func testEnglishPayloadUsesThePreferredEnglishEntry() {
-        let server = SpellingLanguage.englishServer(preferredServers: [
+    func testServersKeepTheSetUpOrder() {
+        let servers = SpellingLanguage.servers(from: [
             ["et", "Sonastik"],
+            ["en_GB"],
             ["en_US", "Apple"],
         ])
-        XCTAssertEqual(server, SpellServer(language: "en_US", vendor: "Apple"))
+        XCTAssertEqual(servers, [
+            SpellServer(language: "et", vendor: "Sonastik"),
+            SpellServer(language: "en_US", vendor: "Apple"),
+        ])
+    }
+
+    func testLayoutShowsFourAndOverflowsTheRest() {
+        let servers = (0..<6).map { SpellServer(language: "l\($0)", vendor: "Apple") }
+        let layout = SpellingLanguage.layout(for: servers)
+        XCTAssertEqual(layout.inline.map(\.language), ["l0", "l1", "l2", "l3"])
+        XCTAssertEqual(layout.overflow.map(\.language), ["l4", "l5"])
+    }
+
+    func testLayoutOfFourHasNoSubmenu() {
+        let servers = (0..<4).map { SpellServer(language: "l\($0)", vendor: "Apple") }
+        let layout = SpellingLanguage.layout(for: servers)
+        XCTAssertEqual(layout.inline.count, 4)
+        XCTAssertTrue(layout.overflow.isEmpty)
+    }
+
+    func testMenuTitles() {
+        XCTAssertEqual(
+            SpellingLanguage.menuTitle(for: SpellServer(language: "et", vendor: "Sonastik")),
+            "Eesti (Sonastik)")
+        XCTAssertEqual(
+            SpellingLanguage.menuTitle(for: SpellServer(language: "en_GB", vendor: "Apple")),
+            "English (United Kingdom)")
+        XCTAssertEqual(
+            SpellingLanguage.menuTitle(for: SpellServer(language: "cs", vendor: "Apple")),
+            "Čeština")
+    }
+
+    func testCurrentMatchUsesLanguageAndVendor() {
+        let vendors = ["et": "Sonastik", "en_GB": "Apple"]
+        XCTAssertTrue(SpellingLanguage.isCurrent(
+            SpellServer(language: "et", vendor: "Sonastik"),
+            language: "et",
+            vendors: vendors))
+        XCTAssertFalse(SpellingLanguage.isCurrent(
+            SpellServer(language: "en_GB", vendor: "Apple"),
+            language: "et",
+            vendors: vendors))
+        XCTAssertFalse(SpellingLanguage.isCurrent(
+            SpellServer(language: "en_US", vendor: "Apple"),
+            language: "en_GB",
+            vendors: vendors))
     }
 
     func testMergedVendorsKeepExistingEntries() {

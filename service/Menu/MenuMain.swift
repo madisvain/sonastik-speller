@@ -7,6 +7,12 @@ import ServiceManagement
 
 private let log = Logger(subsystem: "ee.madisvain.sonastik", category: "menu")
 
+/// `NSMenuItem.representedObject` needs a class. `SpellServer` is a struct.
+private final class SpellServerBox: NSObject {
+    let server: SpellServer
+    init(_ server: SpellServer) { self.server = server }
+}
+
 /// NSApplication.delegate is unretained. This keeps the controller for the process lifetime.
 private var retainedController: MenuController?
 
@@ -88,15 +94,7 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
         ).isEmpty
         let status = ServiceStatus.loadInstalled(isRunning: running)
 
-        let eesti = NSMenuItem(title: "Eesti", action: #selector(chooseEstonian), keyEquivalent: "")
-        eesti.target = self
-        eesti.state = SpellingLanguage.isEstonian(language) ? .on : .off
-        menu.addItem(eesti)
-
-        let english = NSMenuItem(title: "English", action: #selector(chooseEnglish), keyEquivalent: "")
-        english.target = self
-        english.state = SpellingLanguage.isEnglish(language) ? .on : .off
-        menu.addItem(english)
+        addLanguageItems(to: menu, language: language, vendors: GlobalSpelling.vendors())
 
         menu.addItem(.separator())
 
@@ -132,14 +130,51 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(quit)
     }
 
-    @objc private func chooseEstonian() {
-        GlobalSpelling.apply(SpellingLanguage.payload(for: SpellingLanguage.estonian))
-        refreshChrome()
+    private func addLanguageItems(to menu: NSMenu, language: String, vendors: [String: String]) {
+        let servers = SpellingLanguage.servers(from: GlobalSpelling.preferredServers())
+        let layout = SpellingLanguage.layout(for: servers)
+        if layout.inline.isEmpty {
+            let empty = NSMenuItem(title: "No spelling languages", action: nil, keyEquivalent: "")
+            empty.isEnabled = false
+            menu.addItem(empty)
+            return
+        }
+        for server in layout.inline {
+            menu.addItem(languageItem(server, language: language, vendors: vendors))
+        }
+        guard !layout.overflow.isEmpty else { return }
+        let more = NSMenuItem(title: "More", action: nil, keyEquivalent: "")
+        let submenu = NSMenu()
+        submenu.autoenablesItems = false
+        var overflowSelected = false
+        for server in layout.overflow {
+            let item = languageItem(server, language: language, vendors: vendors)
+            if item.state == .on { overflowSelected = true }
+            submenu.addItem(item)
+        }
+        more.submenu = submenu
+        more.state = overflowSelected ? .on : .off
+        menu.addItem(more)
     }
 
-    @objc private func chooseEnglish() {
-        let server = SpellingLanguage.englishServer(preferredServers: GlobalSpelling.preferredServers())
-        GlobalSpelling.apply(SpellingLanguage.payload(for: server))
+    private func languageItem(
+        _ server: SpellServer,
+        language: String,
+        vendors: [String: String]
+    ) -> NSMenuItem {
+        let item = NSMenuItem(
+            title: SpellingLanguage.menuTitle(for: server),
+            action: #selector(chooseServer(_:)),
+            keyEquivalent: "")
+        item.target = self
+        item.representedObject = SpellServerBox(server)
+        item.state = SpellingLanguage.isCurrent(server, language: language, vendors: vendors) ? .on : .off
+        return item
+    }
+
+    @objc private func chooseServer(_ sender: NSMenuItem) {
+        guard let box = sender.representedObject as? SpellServerBox else { return }
+        GlobalSpelling.apply(SpellingLanguage.payload(for: box.server))
         refreshChrome()
     }
 

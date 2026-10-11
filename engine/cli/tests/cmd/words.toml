@@ -1,4 +1,4 @@
-bin.name = "vmspell"
+bin.name = "sonastik"
 args = [
     "--dict",
     "et.dct",

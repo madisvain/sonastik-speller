@@ -11,7 +11,7 @@ mod ffi;
 
 #[derive(Parser)]
 #[command(
-    name = "vmspell",
+    name = "sonastik",
     about = "Check Estonian spelling with Vabamorf",
     disable_version_flag = true
 )]
@@ -113,7 +113,7 @@ fn run() -> ExitCode {
     }) {
         Ok(path) => path,
         Err(message) => {
-            eprintln!("vmspell: {message}");
+            eprintln!("sonastik: {message}");
             return ExitCode::from(1);
         }
     };
@@ -121,14 +121,14 @@ fn run() -> ExitCode {
     let c_dictionary = match path_bytes(&dictionary) {
         Ok(path) => path,
         Err(message) => {
-            eprintln!("vmspell: {message}");
+            eprintln!("sonastik: {message}");
             return ExitCode::from(1);
         }
     };
     let speller = match ffi::Speller::open(&c_dictionary) {
         Ok(speller) => speller,
         Err(message) => {
-            eprintln!("vmspell: {message}");
+            eprintln!("sonastik: {message}");
             return ExitCode::from(1);
         }
     };
@@ -139,7 +139,7 @@ fn run() -> ExitCode {
                 ffi::CheckFailure::Spell => "check",
                 ffi::CheckFailure::Suggest => "suggest for",
             };
-            eprintln!("vmspell: cannot {verb} '{word}'");
+            eprintln!("sonastik: cannot {verb} '{word}'");
             return ExitCode::from(1);
         }
     }

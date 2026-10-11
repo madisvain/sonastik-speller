@@ -1,5 +1,5 @@
 [package]
-name = "vmspell"
+name = "sonastik"
 version = "0.1.0"
 edition = "2024"
 license = "LGPL-2.1-or-later"
@@ -7,7 +7,7 @@ publish = false
 description = "Estonian spelling front end for the Vabamorf C ABI"
 
 [[bin]]
-name = "vmspell"
+name = "sonastik"
 path = "src/main.rs"
 
 [dependencies]

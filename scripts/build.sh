@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build a universal libvabamorf.dylib and vmspell into dist/.
+# Build a universal libvabamorf.dylib and sonastik into dist/.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -25,7 +25,7 @@ cmake -S engine -B build "${generator[@]}" \
 
 cmake --build build --parallel
 
-# vmspell is Rust. Cargo builds one architecture at a time; lipo joins them.
+# sonastik is Rust. Cargo builds one architecture at a time; lipo joins them.
 # @loader_path is how the binary finds libvabamorf.dylib next to itself.
 export MACOSX_DEPLOYMENT_TARGET=13.0
 # One rpath entry. The finished binary finds the dylib next to itself.
@@ -46,11 +46,11 @@ cargo build --release --manifest-path engine/cli/Cargo.toml --target x86_64-appl
 mkdir -p dist
 cp -f build/libvabamorf.dylib dist/
 lipo -create \
-	engine/cli/target/aarch64-apple-darwin/release/vmspell \
-	engine/cli/target/x86_64-apple-darwin/release/vmspell \
-	-output dist/vmspell
+	engine/cli/target/aarch64-apple-darwin/release/sonastik \
+	engine/cli/target/x86_64-apple-darwin/release/sonastik \
+	-output dist/sonastik
 cp -f vabamorf/dct/binary/et.dct dist/
 cp -f LICENSE NOTICE.md dist/
-chmod +x dist/vmspell
+chmod +x dist/sonastik
 
-echo "built ${root}/dist/vmspell ($(dist/vmspell --version))"
+echo "built ${root}/dist/sonastik ($(dist/sonastik --version))"

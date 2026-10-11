@@ -13,7 +13,7 @@ fn cli_tests() {
         .to_string();
 
     trycmd::TestCases::new()
-        .default_bin_name("vmspell")
+        .default_bin_name("sonastik")
         .env("DYLD_LIBRARY_PATH", dylib_dir)
         .case("tests/cmd/*.toml");
 }

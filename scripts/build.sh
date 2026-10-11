@@ -5,12 +5,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 root="$(pwd)"
 
-if [[ ! -f third_party/vabamorf/lib/proof/linguistic.h ]]; then
+if [[ ! -f vabamorf/lib/proof/linguistic.h ]]; then
 	echo "vabamorf submodule is missing. Run: git submodule update --init --recursive" >&2
 	exit 1
 fi
 
-commit="$(git -C third_party/vabamorf rev-parse HEAD)"
+commit="$(git -C vabamorf rev-parse HEAD)"
 if command -v ninja >/dev/null 2>&1; then
 	generator=(-G Ninja)
 else
@@ -49,7 +49,7 @@ lipo -create \
 	engine/cli/target/aarch64-apple-darwin/release/vmspell \
 	engine/cli/target/x86_64-apple-darwin/release/vmspell \
 	-output dist/vmspell
-cp -f third_party/vabamorf/dct/binary/et.dct dist/
+cp -f vabamorf/dct/binary/et.dct dist/
 cp -f LICENSE NOTICE.md dist/
 chmod +x dist/vmspell
 

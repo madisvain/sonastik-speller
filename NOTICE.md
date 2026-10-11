@@ -6,7 +6,7 @@
 
 ## Vabamorf
 
-The spelling engine is [Filosoft Vabamorf](https://github.com/Filosoft/vabamorf), included as a git submodule at `third_party/vabamorf`.
+The spelling engine is [Filosoft Vabamorf](https://github.com/Filosoft/vabamorf), included as a git submodule at `vabamorf`.
 
 - Copyright (c) 2015, Filosoft.
 - The upstream `LICENSE` file says only: "Tarkvara on litsentseeritud LGPL alustel. Software is licensed under LGPL." It does not name a version.

@@ -58,7 +58,7 @@ The artifact is unsigned. macOS may warn about a download that is not from an id
 
 ### Layout
 
-`third_party/vabamorf` is a submodule pinned to a known commit. The C API in `engine/shim/vabamorf_c.h` is the only surface the rest of the program uses. `vmspell` is Rust and links only that API.
+`vabamorf` is a submodule pinned to a known commit. The C API in `engine/shim/vabamorf_c.h` is the only surface the rest of the program uses. `vmspell` is Rust and links only that API.
 
 ## Eesti keeles
 
@@ -116,4 +116,4 @@ Artefakt ei ole allkirjastatud. macOS võib hoiatada, et allalaaditud programm e
 
 ### Paigutus
 
-`third_party/vabamorf` on alammoodul, mis on kinnitatud kindlale commitile. C-liides failis `engine/shim/vabamorf_c.h` on ainus pind, mida ülejäänud programm kasutab. `vmspell` on kirjutatud Rustis ja seob end ainult selle liidesega.
+`vabamorf` on alammoodul, mis on kinnitatud kindlale commitile. C-liides failis `engine/shim/vabamorf_c.h` on ainus pind, mida ülejäänud programm kasutab. `vmspell` on kirjutatud Rustis ja seob end ainult selle liidesega.

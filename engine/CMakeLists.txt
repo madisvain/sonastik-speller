@@ -18,7 +18,7 @@ endif()
 
 set(VM_VABAMORF_COMMIT "unknown" CACHE STRING "Vabamorf commit reported by vm_version()")
 
-set(VABAMORF_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/vabamorf")
+set(VABAMORF_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../vabamorf")
 if(NOT EXISTS "${VABAMORF_ROOT}/lib/proof/linguistic.h")
   message(FATAL_ERROR "Vabamorf submodule is missing at ${VABAMORF_ROOT}")
 endif()

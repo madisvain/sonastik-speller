@@ -8,7 +8,7 @@ root="$(pwd)"
 vm="${1:-${root}/dist/vmspell}"
 dylib="${root}/dist/libvabamorf.dylib"
 dict="${root}/dist/et.dct"
-commit="$(git -C third_party/vabamorf rev-parse HEAD)"
+commit="$(git -C vabamorf rev-parse HEAD)"
 
 fail() {
 	echo "check-words: $*" >&2

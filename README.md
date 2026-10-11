@@ -10,7 +10,7 @@ Our code is LGPL-2.1-or-later. See `NOTICE.md` for the Vabamorf license and the 
 
 ### Build
 
-You need macOS 13 or newer, the Xcode command-line tools, and CMake.
+You need macOS 13 or newer, the Xcode command-line tools, CMake, and stable Rust.
 
 ```sh
 git clone --recurse-submodules https://github.com/madisvain/sonastik-speller.git
@@ -56,7 +56,7 @@ The artifact is unsigned. macOS may warn about a download that is not from an id
 
 ### Layout
 
-`third_party/vabamorf` is a submodule pinned to a known commit. The C API in `engine/shim/vabamorf_c.h` is the only surface the rest of the program uses. `vmspell` is plain C and links that API.
+`third_party/vabamorf` is a submodule pinned to a known commit. The C API in `engine/shim/vabamorf_c.h` is the only surface the rest of the program uses. `vmspell` is Rust and links only that API.
 
 ## Eesti keeles
 
@@ -66,7 +66,7 @@ Meie kood on litsentsiga LGPL-2.1-or-later. Vabamorfi litsents ja sõnastik on k
 
 ### Ehitamine
 
-Vaja on macOS 13 või uuemat, Xcode'i käsureatööriistu ja CMake'i.
+Vaja on macOS 13 või uuemat, Xcode'i käsureatööriistu, CMake'i ja Rusti stabiilset väljalaset.
 
 ```sh
 git clone --recurse-submodules https://github.com/madisvain/sonastik-speller.git
@@ -112,4 +112,4 @@ Artefakt ei ole allkirjastatud. macOS võib hoiatada, et allalaaditud programm e
 
 ### Paigutus
 
-`third_party/vabamorf` on alammoodul, mis on kinnitatud kindlale commitile. C-liides failis `engine/shim/vabamorf_c.h` on ainus pind, mida ülejäänud programm kasutab. `vmspell` on puhas C ja seob end selle liidesega.
+`third_party/vabamorf` on alammoodul, mis on kinnitatud kindlale commitile. C-liides failis `engine/shim/vabamorf_c.h` on ainus pind, mida ülejäänud programm kasutab. `vmspell` on kirjutatud Rustis ja seob end ainult selle liidesega.

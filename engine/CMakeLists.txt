@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
-project(sonastik-speller LANGUAGES C CXX)
+project(sonastik-speller LANGUAGES CXX)
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
@@ -59,16 +57,6 @@ target_link_options(vabamorf PRIVATE "LINKER:-dead_strip")
 set_target_properties(vabamorf PROPERTIES
   OUTPUT_NAME vabamorf
   MACOSX_RPATH ON
-  C_VISIBILITY_PRESET hidden
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON
-)
-
-add_executable(vmspell cli/vmspell.c)
-target_link_libraries(vmspell PRIVATE vabamorf)
-target_include_directories(vmspell PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/shim")
-target_compile_options(vmspell PRIVATE -Wall -Wextra -Werror)
-set_target_properties(vmspell PROPERTIES
-  BUILD_WITH_INSTALL_RPATH ON
-  INSTALL_RPATH "@loader_path"
 )

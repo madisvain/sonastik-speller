@@ -94,6 +94,21 @@ final class MenuTests: XCTestCase {
         XCTAssertEqual(status.tooltip, "Sõnastik · running · 1.0 · vabamorf abc")
     }
 
+    func testEngineLabelShortensAFullCommit() {
+        let full = "vabamorf a1defeb38fc581712537ceb35ab2a5cef8e3f068"
+        XCTAssertEqual(ServiceStatus.engineLabel(for: full), "Vabamorf a1defeb")
+        XCTAssertEqual(ServiceStatus.engineLabel(for: "vabamorf abc"), "vabamorf abc")
+        let status = ServiceStatus.make(
+            bundleExists: true,
+            isRunning: true,
+            info: [
+                "CFBundleShortVersionString": "1.0",
+                "SonastikEngineVersion": full,
+            ])
+        XCTAssertEqual(status.versionLines, ["Version 1.0", "Vabamorf a1defeb"])
+        XCTAssertEqual(status.tooltip, "Sõnastik · running · 1.0 · \(full)")
+    }
+
     func testMissingBundleIsNotInstalled() {
         let status = ServiceStatus.make(bundleExists: false, isRunning: true, info: [
             "CFBundleShortVersionString": "1.0",

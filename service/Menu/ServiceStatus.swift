@@ -41,7 +41,7 @@ struct ServiceStatus: Equatable {
             lines.append("Version \(marketingVersion)")
         }
         if let engineVersion, !engineVersion.isEmpty {
-            lines.append(engineVersion)
+            lines.append(Self.engineLabel(for: engineVersion))
         }
         if lines.isEmpty {
             lines.append("Version unknown")
@@ -66,6 +66,20 @@ struct ServiceStatus: Equatable {
             }
         }
         return parts.joined(separator: " · ")
+    }
+
+    /// Menu label for the engine. A full Vabamorf commit is shortened to the
+    /// seven characters git shows. The tooltip keeps the original string.
+    static func engineLabel(for engineVersion: String) -> String {
+        let parts = engineVersion.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+        guard parts.count == 2, parts[0].lowercased() == "vabamorf" else {
+            return engineVersion
+        }
+        let hash = parts[1]
+        guard hash.count >= 12, hash.allSatisfy(\.isHexDigit) else {
+            return engineVersion
+        }
+        return "Vabamorf \(hash.prefix(7))"
     }
 
     static func make(bundleExists: Bool, isRunning: Bool, info: [String: String]) -> ServiceStatus {

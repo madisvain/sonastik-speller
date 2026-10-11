@@ -104,6 +104,14 @@ final class MenuTests: XCTestCase {
         XCTAssertFalse(status.canStart)
     }
 
+    func testRunningMatchIsTheExecutablePath() {
+        let installed = "/Users/example/Library/Services/EstonianSpeller.service/Contents/MacOS/EstonianSpeller"
+        let other = "/tmp/EstonianSpeller"
+        XCTAssertTrue(ServiceStatus.isRunning(executablePath: installed, among: [other, installed]))
+        XCTAssertFalse(ServiceStatus.isRunning(executablePath: installed, among: [other]))
+        XCTAssertFalse(ServiceStatus.isRunning(executablePath: installed, among: []))
+    }
+
     func testPresentBundleThatIsStopped() {
         let status = ServiceStatus.make(bundleExists: true, isRunning: false, info: [:])
         XCTAssertEqual(status.presence, .notRunning)

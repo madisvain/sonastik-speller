@@ -41,6 +41,9 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let menu = NSMenu()
     private var timer: Timer?
+    private var presenceItem: NSMenuItem?
+    private var startItem: NSMenuItem?
+    private var reportedRunning: Bool?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         menu.autoenablesItems = false
@@ -61,7 +64,6 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func menuWillOpen(_ menu: NSMenu) {
-        refreshChrome()
         rebuild(menu)
     }
 
@@ -76,23 +78,31 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    private func refreshChrome() {
+    private func currentStatus() -> ServiceStatus {
+        let running = ServiceStatus.isInstalledRunning()
+        if reportedRunning != running {
+            reportedRunning = running
+            log.info("speller running: \(running, privacy: .public)")
+        }
+        return ServiceStatus.loadInstalled(isRunning: running)
+    }
+
+    private func apply(_ status: ServiceStatus) {
         let language = GlobalSpelling.currentLanguage()
-        let running = !NSRunningApplication.runningApplications(
-            withBundleIdentifier: ServiceStatus.serviceBundleIdentifier
-        ).isEmpty
-        let status = ServiceStatus.loadInstalled(isRunning: running)
         statusItem.button?.title = SpellingLanguage.statusTitle(for: language)
         statusItem.button?.toolTip = status.tooltip
+        presenceItem?.title = status.presenceLabel
+        startItem?.isHidden = !status.canStart
+    }
+
+    private func refreshChrome() {
+        apply(currentStatus())
     }
 
     private func rebuild(_ menu: NSMenu) {
+        let status = currentStatus()
         menu.removeAllItems()
         let language = GlobalSpelling.currentLanguage() ?? ""
-        let running = !NSRunningApplication.runningApplications(
-            withBundleIdentifier: ServiceStatus.serviceBundleIdentifier
-        ).isEmpty
-        let status = ServiceStatus.loadInstalled(isRunning: running)
 
         addLanguageItems(to: menu, language: language, vendors: GlobalSpelling.vendors())
 
@@ -100,13 +110,14 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let presence = NSMenuItem(title: status.presenceLabel, action: nil, keyEquivalent: "")
         presence.isEnabled = false
+        presenceItem = presence
         menu.addItem(presence)
 
-        if status.canStart {
-            let start = NSMenuItem(title: "Start Sõnastik", action: #selector(startService), keyEquivalent: "")
-            start.target = self
-            menu.addItem(start)
-        }
+        let start = NSMenuItem(title: "Start Sõnastik", action: #selector(startService), keyEquivalent: "")
+        start.target = self
+        start.isHidden = !status.canStart
+        startItem = start
+        menu.addItem(start)
 
         for line in status.versionLines {
             let version = NSMenuItem(title: line, action: nil, keyEquivalent: "")
@@ -128,6 +139,7 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let quit = NSMenuItem(title: "Quit Sõnastik", action: #selector(quit), keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
+        apply(status)
     }
 
     private func addLanguageItems(to menu: NSMenu, language: String, vendors: [String: String]) {
@@ -179,22 +191,19 @@ final class MenuController: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func startService() {
-        let binary = ServiceStatus.installedBundle.appendingPathComponent("Contents/MacOS/EstonianSpeller")
+        let binary = ServiceStatus.installedExecutable
         guard FileManager.default.isExecutableFile(atPath: binary.path) else {
             log.error("speller executable is missing")
             return
         }
-        // The spelling process is independent of this menu app. Quitting the menu
-        // must leave it running, so this Process is not stored or terminated.
-        let process = Process()
-        process.executableURL = binary
-        process.standardInput = FileHandle.nullDevice
-        process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
-        do {
-            try process.run()
-        } catch {
-            log.error("start failed: \(error, privacy: .public)")
+        let already = ServiceStatus.isInstalledRunning()
+        let code = ServiceStatus.startDetached(executablePath: binary.path)
+        if already {
+            log.info("speller already running")
+        } else if code != 0 {
+            log.error("start failed: \(code, privacy: .public)")
+        } else {
+            log.info("speller started")
         }
         refreshChrome()
     }

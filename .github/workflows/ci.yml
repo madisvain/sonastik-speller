@@ -16,15 +16,35 @@ jobs:
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: XcodeGen
+        run: brew install xcodegen
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+
       - name: Build
         run: ./scripts/build.sh
 
       - name: Test
         run: ./scripts/check-words.sh
 
-      - name: Upload artifact
+      - name: Upload engine
         uses: actions/upload-artifact@v4
         with:
           name: engine-macos
-          path: dist/
+          path: |
+            dist/sonastik
+            dist/libvabamorf.dylib
+            dist/et.dct
+            dist/LICENSE
+            dist/NOTICE.md
+          if-no-files-found: error
+
+      - name: Upload spelling service
+        uses: actions/upload-artifact@v4
+        with:
+          name: spelling-service
+          path: |
+            dist/EstonianSpeller.service
+            dist/install-dev.sh
+            dist/uninstall.sh
           if-no-files-found: error

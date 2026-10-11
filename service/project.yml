@@ -1,0 +1,121 @@
+name: EstonianSpeller
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "13.0"
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    ARCHS: arm64 x86_64
+    ONLY_ACTIVE_ARCH: NO
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    ENABLE_HARDENED_RUNTIME: NO
+    ENABLE_APP_SANDBOX: NO
+    ENABLE_DEBUG_DYLIB: NO
+    ASSETCATALOG_COMPILER_APPICON_NAME: ""
+targets:
+  EstonianSpeller:
+    type: application
+    platform: macOS
+    sources:
+      - Sources
+    info:
+      path: Info.plist
+      properties:
+        LSBackgroundOnly: true
+        LSUIElement: true
+        LSMinimumSystemVersion: "13.0"
+        NSServices:
+          - NSExecutable: EstonianSpeller
+            NSPortName: EstonianSpeller
+            NSSpellChecker: Sonastik
+            NSLanguages:
+              - et
+    settings:
+      base:
+        PRODUCT_NAME: EstonianSpeller
+        PRODUCT_BUNDLE_IDENTIFIER: ee.madisvain.EstonianSpeller
+        PRODUCT_MODULE_NAME: EstonianSpeller
+        GENERATE_INFOPLIST_FILE: NO
+        WRAPPER_EXTENSION: service
+        SWIFT_OBJC_BRIDGING_HEADER: EstonianSpeller-Bridging-Header.h
+        LIBRARY_SEARCH_PATHS: $(SRCROOT)/../build
+        OTHER_LDFLAGS: -lvabamorf
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+    postBuildScripts:
+      - name: Embed engine and dictionary
+        basedOnDependencyAnalysis: false
+        script: |
+          set -eu
+          bundle="${TARGET_BUILD_DIR}/${WRAPPER_NAME}"
+          fw="${bundle}/Contents/Frameworks"
+          res="${bundle}/Contents/Resources"
+          mkdir -p "${fw}" "${res}"
+          cp -f "${SRCROOT}/../build/libvabamorf.dylib" "${fw}/libvabamorf.dylib"
+          cp -f "${SRCROOT}/../vabamorf/dct/binary/et.dct" "${res}/et.dct"
+          cp -f "${SRCROOT}/../LICENSE" "${res}/LICENSE"
+          cp -f "${SRCROOT}/../NOTICE.md" "${res}/NOTICE.md"
+          codesign --force --sign - "${fw}/libvabamorf.dylib"
+  TestHost:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+        excludes:
+          - ServiceMain.swift
+      - TestHost
+    settings:
+      base:
+        PRODUCT_NAME: TestHost
+        PRODUCT_BUNDLE_IDENTIFIER: ee.madisvain.EstonianSpellerTestHost
+        PRODUCT_MODULE_NAME: TestHost
+        GENERATE_INFOPLIST_FILE: YES
+        ENABLE_TESTABILITY: YES
+        SWIFT_OBJC_BRIDGING_HEADER: EstonianSpeller-Bridging-Header.h
+        LIBRARY_SEARCH_PATHS: $(SRCROOT)/../build
+        OTHER_LDFLAGS: -lvabamorf
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+        LSUIElement: YES
+    postBuildScripts:
+      - name: Embed engine and dictionary
+        basedOnDependencyAnalysis: false
+        script: |
+          set -eu
+          bundle="${TARGET_BUILD_DIR}/${WRAPPER_NAME}"
+          fw="${bundle}/Contents/Frameworks"
+          res="${bundle}/Contents/Resources"
+          mkdir -p "${fw}" "${res}"
+          cp -f "${SRCROOT}/../build/libvabamorf.dylib" "${fw}/libvabamorf.dylib"
+          cp -f "${SRCROOT}/../vabamorf/dct/binary/et.dct" "${res}/et.dct"
+          cp -f "${SRCROOT}/../LICENSE" "${res}/LICENSE"
+          cp -f "${SRCROOT}/../NOTICE.md" "${res}/NOTICE.md"
+          codesign --force --sign - "${fw}/libvabamorf.dylib"
+  SpellerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests
+    dependencies:
+      - target: TestHost
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ee.madisvain.EstonianSpellerTests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/TestHost.app/Contents/MacOS/TestHost
+        BUNDLE_LOADER: $(TEST_HOST)
+schemes:
+  EstonianSpeller:
+    build:
+      targets:
+        EstonianSpeller: all
+        TestHost: all
+        SpellerTests: [test]
+    test:
+      config: Release
+      targets:
+        - name: SpellerTests
+          parallelizable: false
+          randomExecutionOrder: false

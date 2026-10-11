@@ -2,7 +2,7 @@
 
 Estonian spelling for macOS, using Filosoft's [Vabamorf](https://github.com/Filosoft/vabamorf) engine.
 
-This milestone builds the engine only: a universal `libvabamorf.dylib` and a `sonastik` command. macOS does not yet offer Estonian ("eesti") as a system spelling language. That service comes in a later milestone. Firefox and Microsoft Word use their own checkers and will not use this one.
+The build produces a universal `libvabamorf.dylib`, a `sonastik` command, and `EstonianSpeller.service`. The service is a background app with no window. After it is installed, System Settings lists Estonian from Sonastik, and TextEdit, Notes, Safari, and Chrome underline Estonian misspellings. Firefox and Microsoft Word use their own checkers and will not use this one.
 
 Our code is LGPL-2.1-or-later. See `NOTICE.md` for the Vabamorf license and the dictionary.
 
@@ -10,7 +10,7 @@ Our code is LGPL-2.1-or-later. See `NOTICE.md` for the Vabamorf license and the 
 
 ### Build
 
-You need macOS 13 or newer, the Xcode command-line tools, CMake, and stable Rust.
+You need macOS 13 or newer, the Xcode command-line tools, CMake, stable Rust, and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
 
 ```sh
 git clone --recurse-submodules https://github.com/madisvain/sonastik-speller.git
@@ -26,7 +26,9 @@ cd sonastik-speller
 - `sonastik`, the command-line checker
 - `libvabamorf.dylib`, the engine (Apple Silicon and Intel)
 - `et.dct`, the spelling dictionary
-- `LICENSE` and `NOTICE.md`
+- `LICENSE`, `NOTICE.md`, and `THIRD-PARTY.md` (license notices for the Rust crates linked into `sonastik`)
+- `EstonianSpeller.service`, the background spelling service
+- `install-dev.sh` and `uninstall.sh`
 
 ### Check a word
 
@@ -54,7 +56,31 @@ xattr -dr com.apple.quarantine .
 ./sonastik kõrgaridus
 ```
 
-The artifact is unsigned. macOS may warn about a download that is not from an identified developer. That warning goes away in the signed-installer milestone. Clearing the quarantine flag is enough to run this one.
+The command-line artifact is ad-hoc signed at most, and it is not notarized. macOS may warn about a download that is not from an identified developer. That warning goes away in the signed-installer milestone. Clearing the quarantine flag is enough to run the command.
+
+### Install the spelling service
+
+The service has no window, dock icon, or installer package. macOS draws the underline and the suggestion menu. From a checkout, after `./scripts/build.sh`:
+
+```sh
+./scripts/install-dev.sh
+```
+
+GitHub Actions also uploads a `spelling-service` artifact. Unzip it and run `./install-dev.sh` in that directory. The script copies `EstonianSpeller.service` to `~/Library/Services/` for the current user, clears the quarantine flag, re-signs the copy ad hoc if the signature did not survive the copy, and asks macOS to rescan services. It does not ask for an admin password and does not write to `/Applications` or `/Library`.
+
+Then open System Settings → Keyboard → Text Input → Spelling, and choose the Estonian entry whose vendor is Sonastik. The registration is language `et` and vendor `Sonastik`. macOS picks the exact label.
+
+In TextEdit, type `raamtukogu`. It is underlined, and the first suggestion is `raamatukogu`. The same word works in Notes, Safari, and Chrome.
+
+Remove it with `./scripts/uninstall.sh`, or with `./uninstall.sh` next to the unzipped artifact.
+
+Hyphenated words, abbreviations, and URLs are still split into letter runs. `e-post` can flag `e`. ALL-CAPS words are checked. Those rules come in a later milestone. The service is ad-hoc signed, not notarized.
+
+### Troubleshooting
+
+- The language does not appear after install. Run `/System/Library/CoreServices/pbs -update`, then log out and back in.
+- macOS says the bundle is from an unidentified developer, or that it is damaged. Run `install-dev.sh` again. It clears `com.apple.quarantine` and signs the bundle ad hoc.
+- Startup messages are in Console.app. Filter on `ee.madisvain.estonianspeller`.
 
 ### Layout
 
@@ -62,13 +88,13 @@ The artifact is unsigned. macOS may warn about a download that is not from an id
 
 ## Eesti keeles
 
-See etapp ehitab ainult mootori: universaalse teegi `libvabamorf.dylib` ja käsureaprogrammi `sonastik`. macOS ei paku veel eesti keelt süsteemse õigekirjakontrollina. See teenus tuleb hilisemas etapis. Firefox ja Microsoft Word kasutavad oma kontrolli ega hakka seda teeki kasutama.
+Ehitus teeb universaalse teegi `libvabamorf.dylib`, käsureaprogrammi `sonastik` ja teenuse `EstonianSpeller.service`. Teenus on taustarakendus ega ava oma akent. Pärast paigaldamist näitab süsteemiseadete loend eesti keelt pakkujalt Sonastik ning TextEdit, Notes, Safari ja Chrome tõmbavad vigased sõnad alla. Firefox ja Microsoft Word kasutavad oma kontrolli ega hakka seda teenust kasutama.
 
 Meie kood on litsentsiga LGPL-2.1-or-later. Vabamorfi litsents ja sõnastik on kirjas failis `NOTICE.md`.
 
 ### Ehitamine
 
-Vaja on macOS 13 või uuemat, Xcode'i käsureatööriistu, CMake'i ja Rusti stabiilset väljalaset.
+Vaja on macOS 13 või uuemat, Xcode'i käsureatööriistu, CMake'i, Rusti stabiilset väljalaset ja [XcodeGeni](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
 
 ```sh
 git clone --recurse-submodules https://github.com/madisvain/sonastik-speller.git
@@ -84,7 +110,9 @@ cd sonastik-speller
 - `sonastik`, käsurea kontrollija
 - `libvabamorf.dylib`, mootor (Apple Silicon ja Intel)
 - `et.dct`, õigekirjasõnastik
-- `LICENSE` ja `NOTICE.md`
+- `LICENSE`, `NOTICE.md` ja `THIRD-PARTY.md` (litsentsiteated Rusti kastide kohta, mis on `sonastik`-i sisse lingitud)
+- `EstonianSpeller.service`, taustal töötav õigekirjateenus
+- `install-dev.sh` ja `uninstall.sh`
 
 ### Sõna kontroll
 
@@ -112,7 +140,31 @@ xattr -dr com.apple.quarantine .
 ./sonastik kõrgaridus
 ```
 
-Artefakt ei ole allkirjastatud. macOS võib hoiatada, et allalaaditud programm ei ole tuntud arendajalt. See hoiatus kaob allkirjastatud paigaldaja etapis. Karantiinilipu eemaldamisest piisab, et seda ehitist käivitada.
+Käsurea artefakt on kõige rohkem ad-hoc allkirjastatud ja ei ole notariseeritud. macOS võib hoiatada, et allalaaditud programm ei ole tuntud arendajalt. See hoiatus kaob allkirjastatud paigaldaja etapis. Karantiinilipu eemaldamisest piisab, et käsku käivitada.
+
+### Õigekirjateenuse paigaldamine
+
+Teenusel ei ole akent, dokiikooni ega paigalduspaketti. Allajoonimise ja soovituste menüü joonistab macOS. Pärast `./scripts/build.sh` käivita hoidlast:
+
+```sh
+./scripts/install-dev.sh
+```
+
+GitHub Actions laadib üles ka artefakti `spelling-service`. Paki see lahti ja käivita selles kataloogis `./install-dev.sh`. Skript kopeerib `EstonianSpeller.service` praeguse kasutaja kausta `~/Library/Services/`, eemaldab karantiinilipu, allkirjastab koopia ad-hoc, kui kopeerimine allkirja lõhkus, ja palub macOS-il teenused uuesti üle vaadata. Administraatori parooli ei küsita. Midagi ei kirjutata kaustadesse `/Applications` ega `/Library`.
+
+Seejärel ava Süsteemi seaded → Klaviatuur → Tekstisisestus → Õigekiri ja vali eesti keele kirje, mille pakkuja on Sonastik. Registreeritud keel on `et` ja pakkuja `Sonastik`. Täpse sildi valib macOS.
+
+TextEditis kirjuta `raamtukogu`. Sõna tõmmatakse alla ja esimene soovitus on `raamatukogu`. Sama sõna töötab Notesis, Safaris ja Chromes.
+
+Eemaldamiseks käivita `./scripts/uninstall.sh` või lahtipakitud artefakti kõrval `./uninstall.sh`.
+
+Sidekriipsuga sõnad, lühendid ja veebiaadressid jagatakse ikka tähejadadeks. `e-post` võib märkida `e` vigaseks. Läbiva suurtähega sõnu kontrollitakse. Need reeglid tulevad hilisemas etapis. Teenus on allkirjastatud ad-hoc, mitte notariseeritud.
+
+### Tõrkeotsing
+
+- Keel ei ilmu pärast paigaldamist. Käivita `/System/Library/CoreServices/pbs -update` ja logi välja ning tagasi sisse.
+- macOS ütleb, et pakett on tundmatult arendajalt või rikutud. Käivita `install-dev.sh` uuesti. See eemaldab `com.apple.quarantine` ja allkirjastab paketi ad-hoc.
+- Käivituslogid on rakenduses Console. Filtreeri `ee.madisvain.estonianspeller`.
 
 ### Paigutus
 

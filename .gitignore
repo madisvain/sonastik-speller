@@ -1,4 +1,6 @@
 build/
 dist/
 engine/cli/target/
+service/DerivedData/
+service/EstonianSpeller.xcodeproj/
 .DS_Store

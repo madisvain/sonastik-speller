@@ -13,7 +13,7 @@ The spelling engine is [Filosoft Vabamorf](https://github.com/Filosoft/vabamorf)
 - An unversioned LGPL grant lets the recipient choose any published version of the GNU LGPL. That is the Free Software Foundation's reading of a library that says it is under "the LGPL" without a version number (see the FSF FAQ, "If a library says it's released under the LGPL, but doesn't specify a version"). We choose LGPL-2.1-or-later, the same grant as our own code.
 - The submodule is pinned to commit `a1defeb38fc581712537ceb35ab2a5cef8e3f068` (2026-10-08). Do not edit it in this repository. Changes to Vabamorf belong upstream, or in `patches/` applied by the build.
 
-Vabamorf is built as a separate dynamic library, `libvabamorf.dylib`, and the command-line tool links it at runtime through `@rpath`. Replacing that library does not require rebuilding `sonastik`.
+Vabamorf is built as a separate dynamic library, `libvabamorf.dylib`. The command-line tool links it at runtime through `@rpath`, and `EstonianSpeller.service` loads its own copy from `Contents/Frameworks` the same way. Replacing either copy does not require rebuilding `sonastik` or the service.
 
 ## Dictionary
 

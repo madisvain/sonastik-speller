@@ -1,5 +1,6 @@
 #!/bin/bash
-# Regression check for dist/vmspell. Fails if suggestions or the binary layout drift.
+# Layout check for the universal dist/ binaries. The word list is
+# engine/cli/tests/cmd/words.toml and runs under cargo test.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -39,25 +40,6 @@ status=$?
 set -e
 [[ "$status" -ne 0 && "$status" -lt 128 ]] || fail "missing dictionary exited $status"
 grep -q . /tmp/vmspell-missing.err || fail "missing dictionary produced no error"
-
-while IFS= read -r word || [[ -n "$word" ]]; do
-	[[ -z "$word" || "$word" == \#* ]] && continue
-	line="$("$vm" --dict "$dict" "$word")"
-	echo "$line"
-	[[ "$line" == "$word -- OK" ]] || fail "expected $word to be OK, got: $line"
-done < tests/words_ok.txt
-
-while IFS=$'\t' read -r word expected || [[ -n "${word:-}" ]]; do
-	[[ -z "${word:-}" || "$word" == \#* ]] && continue
-	[[ -n "${expected:-}" ]] || fail "bad row in tests/words_bad.tsv: $word"
-	line="$("$vm" --dict "$dict" "$word")"
-	echo "$line"
-	prefix="$word -- Vigane, soovitan: "
-	[[ "$line" == "$prefix"* ]] || fail "unexpected suggestion line: $line"
-	rest="${line#"$prefix"}"
-	first="${rest%% *}"
-	[[ "$first" == "$expected" ]] || fail "$word: first suggestion is '$first', expected '$expected'"
-done < tests/words_bad.tsv
 
 # Dictionary lookup must work from another directory, using et.dct beside the binary.
 beside="$(cd /tmp && "$vm" kõrgaridus)"

@@ -19,6 +19,8 @@ cd sonastik-speller
 ./scripts/check-words.sh
 ```
 
+`./scripts/build.sh` runs `cargo test`, which checks the word list in `engine/cli/tests/cmd/words.toml`. `./scripts/check-words.sh` checks the universal binaries in `dist/`.
+
 `./scripts/build.sh` writes `dist/`:
 
 - `vmspell`, the command-line checker
@@ -74,6 +76,8 @@ cd sonastik-speller
 ./scripts/build.sh
 ./scripts/check-words.sh
 ```
+
+`./scripts/build.sh` käivitab `cargo test`, mis kontrollib sõnaloendit failis `engine/cli/tests/cmd/words.toml`. `./scripts/check-words.sh` kontrollib universaalseid binaare kataloogis `dist/`.
 
 `./scripts/build.sh` teeb kataloogi `dist/`:
 

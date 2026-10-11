@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build a universal libvabamorf.dylib, sonastik, and EstonianSpeller.service into dist/.
+# Build a universal libvabamorf.dylib, sonastik, EstonianSpeller.service, and Sonastik.app into dist/.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -81,12 +81,33 @@ product="${root}/service/DerivedData/Build/Products/Release/EstonianSpeller.serv
 	echo "missing ${product}" >&2
 	exit 1
 }
-rm -rf dist/EstonianSpeller.service
+menu_product="${root}/service/DerivedData/Build/Products/Release/Sonastik.app"
+[[ -d "${menu_product}" ]] || {
+	echo "missing ${menu_product}" >&2
+	exit 1
+}
+rm -rf dist/EstonianSpeller.service dist/Sonastik.app
 ditto "${product}" dist/EstonianSpeller.service
+ditto "${menu_product}" dist/Sonastik.app
+
+engine_version="$(dist/sonastik --version)"
+stamp_engine_version() {
+	local info="$1"
+	if plutil -extract SonastikEngineVersion raw -o /dev/null "${info}" 2>/dev/null; then
+		plutil -replace SonastikEngineVersion -string "${engine_version}" "${info}" >/dev/null
+	else
+		plutil -insert SonastikEngineVersion -string "${engine_version}" "${info}" >/dev/null
+	fi
+}
+stamp_engine_version dist/EstonianSpeller.service/Contents/Info.plist
+stamp_engine_version dist/Sonastik.app/Contents/Info.plist
+
 # Inside out. --deep would re-sign nested code with the wrong options.
 codesign --force --sign - dist/EstonianSpeller.service/Contents/Frameworks/libvabamorf.dylib
 codesign --force --sign - dist/EstonianSpeller.service
+codesign --force --sign - dist/Sonastik.app
 codesign --verify --verbose=2 dist/EstonianSpeller.service
+codesign --verify --verbose=2 dist/Sonastik.app
 info="dist/EstonianSpeller.service/Contents/Info.plist"
 [[ "$(plutil -extract NSServices.0.NSSpellChecker raw -o - "${info}")" == "Sonastik" ]]
 [[ "$(plutil -extract NSServices.0.NSExecutable raw -o - "${info}")" == "EstonianSpeller" ]]
@@ -94,16 +115,36 @@ info="dist/EstonianSpeller.service/Contents/Info.plist"
 [[ "$(plutil -extract NSServices.0.NSLanguages.0 raw -o - "${info}")" == "et" ]]
 [[ "$(plutil -extract LSBackgroundOnly raw -o - "${info}")" == "true" ]]
 [[ "$(plutil -extract LSUIElement raw -o - "${info}")" == "true" ]]
+[[ "$(plutil -extract SonastikEngineVersion raw -o - "${info}")" == "${engine_version}" ]]
+menu_info="dist/Sonastik.app/Contents/Info.plist"
+[[ "$(plutil -extract CFBundleIdentifier raw -o - "${menu_info}")" == "ee.madisvain.Sonastik" ]]
+[[ "$(plutil -extract CFBundleName raw -o - "${menu_info}")" == "Sõnastik" ]]
+[[ "$(plutil -extract CFBundleDisplayName raw -o - "${menu_info}")" == "Sõnastik" ]]
+[[ "$(plutil -extract LSUIElement raw -o - "${menu_info}")" == "true" ]]
+[[ "$(plutil -extract SonastikEngineVersion raw -o - "${menu_info}")" == "${engine_version}" ]]
+if plutil -extract LSBackgroundOnly raw -o - "${menu_info}" >/dev/null 2>&1; then
+	echo "Sonastik.app must not set LSBackgroundOnly" >&2
+	exit 1
+fi
+echo "${engine_version}" | grep -q "vabamorf"
+echo "${engine_version}" | grep -q "${commit}"
 cp -f scripts/install-dev.sh scripts/uninstall.sh dist/
 chmod +x dist/install-dev.sh dist/uninstall.sh
 
 service_bin="dist/EstonianSpeller.service/Contents/MacOS/EstonianSpeller"
+menu_bin="dist/Sonastik.app/Contents/MacOS/Sonastik"
 service_info="$(lipo -info "${service_bin}")"
+menu_lipo="$(lipo -info "${menu_bin}")"
 echo "${service_info}"
+echo "${menu_lipo}"
 echo "${service_info}" | grep -q arm64
 echo "${service_info}" | grep -q x86_64
+echo "${menu_lipo}" | grep -q arm64
+echo "${menu_lipo}" | grep -q x86_64
 [[ -f dist/EstonianSpeller.service/Contents/Resources/et.dct ]]
 [[ -f dist/EstonianSpeller.service/Contents/Frameworks/libvabamorf.dylib ]]
+[[ -f dist/Sonastik.app/Contents/Resources/LICENSE ]]
 otool -l "${service_bin}" | grep -q '@executable_path/../Frameworks'
 
 echo "built ${root}/dist/EstonianSpeller.service"
+echo "built ${root}/dist/Sonastik.app"

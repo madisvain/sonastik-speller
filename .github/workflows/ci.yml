@@ -45,6 +45,7 @@ jobs:
           name: spelling-service
           path: |
             dist/EstonianSpeller.service
+            dist/Sonastik.app
             dist/install-dev.sh
             dist/uninstall.sh
           if-no-files-found: error

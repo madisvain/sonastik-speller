@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sonastik.ee</title>
+  <meta name="description" content="Eesti keele sõnastik. Otsi sõna ja loe tähendust.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9612;</text></svg>">
+  <script src="vendor/tailwind.js"></script>
+</head>
+<body class="bg-black text-white min-h-screen font-mono antialiased selection:bg-white selection:text-black">
+
+  <main class="max-w-3xl mx-auto px-4 py-10 sm:py-16">
+
+    <header class="mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
+        <span class="text-white/50">$</span> sonastik<span class="text-white/50">.ee</span>
+      </h1>
+      <p id="status" class="text-white/60 mt-2 text-sm">laen sõnastikku&#8230;</p>
+    </header>
+
+    <section class="mb-8">
+      <label for="search" class="sr-only">Otsi sõna</label>
+      <div class="flex items-center border border-white/60 focus-within:border-white">
+        <span class="pl-3 text-white/60 select-none" aria-hidden="true">&gt;</span>
+        <input
+          id="search"
+          type="search"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="otsi sõna&#8230;"
+          class="w-full bg-transparent px-2 py-3 text-lg outline-none placeholder:text-white/40 caret-white"
+        >
+      </div>
+      <p class="text-white/40 mt-2 text-xs">esiletõstmine ei aita &mdash; lihtsalt kirjuta sõna, nt <button class="underline underline-offset-2 hover:text-white" data-example="puu">puu</button>, <button class="underline underline-offset-2 hover:text-white" data-example="käsi">käsi</button>, <button class="underline underline-offset-2 hover:text-white" data-example="tegema">tegema</button></p>
+    </section>
+
+    <section id="results" aria-live="polite">
+      <p class="text-white/50">&gt; ootan päringut&#8230;<span class="animate-pulse">_</span></p>
+    </section>
+
+    <footer class="mt-16 pt-6 border-t border-white/20 text-xs text-white/50 space-y-1">
+      <p>andmed: EKI ühendsõnastik (Ekilex / <a class="underline hover:text-white" href="https://sonaveeb.ee" rel="noopener">sonaveeb.ee</a>), CC BY 4.0</p>
+      <p>see on staatiline leht &mdash; kõik otsing toimub sinu brauseris</p>
+    </footer>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
